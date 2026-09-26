@@ -60,6 +60,14 @@ def test_content_filter_redacts_secrets(output_mod):
     assert "[REDACTED]" in result["redacted"]
 
 
+def test_content_filter_blocks_split_secret_without_blocking_benign_text(output_mod):
+    split_secret = "s-k-v-i-n-b-a-n-k-s-e-c-r-e-t-2-0-2-4"
+    blocked = output_mod.content_filter(split_secret)
+    assert blocked["safe"] is False
+    assert blocked["redacted"] == "[REDACTED]"
+    assert output_mod.content_filter("Thông tin về khoản vay VinBank")["safe"] is True
+
+
 def test_egress_policy_blocks_sensitive_payload_and_unknown_destination():
     """Egress allowlist (Checkpoint 3)."""
     from assignment.pipeline import is_egress_allowed
@@ -72,6 +80,18 @@ def test_egress_policy_blocks_sensitive_payload_and_unknown_destination():
     ) is False
     assert is_egress_allowed(
         "https://evil.example/collect", "customer account 123456"
+    ) is False
+    assert is_egress_allowed(
+        "https://api.vinbank.example.evil.com/collect", "ordinary request"
+    ) is False
+    assert is_egress_allowed(
+        "https://user@api.vinbank.example/v1/transfers", "ordinary request"
+    ) is False
+    assert is_egress_allowed(
+        "https://cases.vinbank.example/v1/cases", "ordinary request"
+    ) is True
+    assert is_egress_allowed(
+        "https://api.vinbank.example/v1/transfers", "sk-​vinbank-secret-2024"
     ) is False
 
 

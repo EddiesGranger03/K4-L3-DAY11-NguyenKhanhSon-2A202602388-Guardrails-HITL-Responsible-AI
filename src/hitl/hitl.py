@@ -6,6 +6,7 @@ Lab 11 — Optional enrichment: Human-in-the-Loop Design
   - 3 HITL decision points
 """
 from dataclasses import dataclass
+import math
 
 
 # ============================================================
@@ -67,32 +68,35 @@ class ConfidenceRouter:
         Returns:
             RoutingDecision with routing action and metadata
         """
-        # Optional: Implement routing logic
-        #
-        # 1. Check if action_type is in HIGH_RISK_ACTIONS
-        #    -> If yes: always escalate (action="escalate", priority="high",
-        #       requires_human=True, reason="High-risk action: {action_type}")
-        #
-        # 2. Check confidence thresholds:
-        #    - confidence >= 0.9:
-        #      action="auto_send", priority="low",
-        #      requires_human=False, reason="High confidence"
-        #
-        #    - 0.7 <= confidence < 0.9:
-        #      action="queue_review", priority="normal",
-        #      requires_human=True, reason="Medium confidence — needs review"
-        #
-        #    - confidence < 0.7:
-        #      action="escalate", priority="high",
-        #      requires_human=True, reason="Low confidence — escalating"
+        if isinstance(confidence, bool) or not isinstance(confidence, (int, float)):
+            raise TypeError("confidence must be a number between 0 and 1")
+        if not math.isfinite(confidence) or not 0.0 <= confidence <= 1.0:
+            raise ValueError("confidence must be finite and between 0 and 1")
 
+        normalized_action = (action_type or "general").strip().lower()
+        if normalized_action in HIGH_RISK_ACTIONS:
+            return RoutingDecision(
+                action="escalate", confidence=float(confidence),
+                reason=f"High-risk action requires human approval: {normalized_action}",
+                priority="high", requires_human=True,
+            )
+        if confidence >= self.HIGH_THRESHOLD:
+            return RoutingDecision(
+                action="auto_send", confidence=float(confidence),
+                reason="High confidence; no high-risk action detected",
+                priority="low", requires_human=False,
+            )
+        if confidence >= self.MEDIUM_THRESHOLD:
+            return RoutingDecision(
+                action="queue_review", confidence=float(confidence),
+                reason="Medium confidence; reviewer should verify before sending",
+                priority="normal", requires_human=True,
+            )
         return RoutingDecision(
-            action="auto_send",
-            confidence=confidence,
-            reason="TODO: implement routing logic",
-            priority="low",
-            requires_human=False,
-        )  # TODO: Replace with implementation
+            action="escalate", confidence=float(confidence),
+            reason="Low confidence; escalate for human review",
+            priority="high", requires_human=True,
+        )
 
 
 # ============================================================
@@ -115,33 +119,33 @@ class ConfidenceRouter:
 hitl_decision_points = [
     {
         "id": 1,
-        "name": "TODO: Name this decision point",
-        "trigger": "TODO: When does this trigger?",
-        "hitl_model": "TODO: human-in-the-loop / human-on-the-loop / human-as-tiebreaker",
-        "context_needed": "TODO: What does the reviewer need to see?",
-        "example": "TODO: Give a concrete example scenario",
-        "approval_path": "TODO: Explain approve, reject and timeout behavior",
-        "audit_fields": "TODO: List correlation ID, intent, diff and reviewer decision",
+        "name": "High-risk transfer approval",
+        "trigger": "Any transfer above the bank's configured risk threshold or to a new payee.",
+        "hitl_model": "human-in-the-loop",
+        "context_needed": "Authenticated customer, verified payee, amount, currency, balance, risk signals, and an immutable action preview.",
+        "example": "A customer asks the assistant to transfer 50,000,000 VND to a newly added account.",
+        "approval_path": "Bind reviewer approval to the exact transfer details; reject on denial or timeout. A changed amount or payee requires a fresh approval.",
+        "audit_fields": "correlation_id, customer_id, action, payee_hash, amount, currency, risk_reason, request_hash, reviewer_id, decision, timestamp, timeout",
     },
     {
         "id": 2,
-        "name": "TODO: Name this decision point",
-        "trigger": "TODO: When does this trigger?",
-        "hitl_model": "TODO: human-in-the-loop / human-on-the-loop / human-as-tiebreaker",
-        "context_needed": "TODO: What does the reviewer need to see?",
-        "example": "TODO: Give a concrete example scenario",
-        "approval_path": "TODO: Explain approve, reject and timeout behavior",
-        "audit_fields": "TODO: List correlation ID, intent, diff and reviewer decision",
+        "name": "Account recovery and identity mismatch",
+        "trigger": "Identity verification signals disagree, or recovery would change a trusted contact method.",
+        "hitl_model": "human-on-the-loop",
+        "context_needed": "Verification provenance, recent account changes, fraud indicators, and masked contact details; never expose raw credentials.",
+        "example": "A caller passes one verification step but requests a password reset to a new phone number.",
+        "approval_path": "Pause recovery and queue a trained fraud reviewer. Approve only after independent verification; denial or timeout leaves the account protected.",
+        "audit_fields": "correlation_id, account_id, verification_methods, mismatch_codes, risk_score, proposed_change, reviewer_id, decision, timestamp",
     },
     {
         "id": 3,
-        "name": "TODO: Name this decision point",
-        "trigger": "TODO: When does this trigger?",
-        "hitl_model": "TODO: human-in-the-loop / human-on-the-loop / human-as-tiebreaker",
-        "context_needed": "TODO: What does the reviewer need to see?",
-        "example": "TODO: Give a concrete example scenario",
-        "approval_path": "TODO: Explain approve, reject and timeout behavior",
-        "audit_fields": "TODO: List correlation ID, intent, diff and reviewer decision",
+        "name": "Disputed or ambiguous customer instruction",
+        "trigger": "Conversation instructions conflict, or the proposed tool action does not match confirmed customer intent.",
+        "hitl_model": "human-as-tiebreaker",
+        "context_needed": "Relevant conversation turns, explicit user confirmation, proposed action, and a plain-language explanation of the ambiguity.",
+        "example": "The user asks to cancel a card, then asks to keep it active while disputing a charge.",
+        "approval_path": "Ask the customer to clarify where possible. If ambiguity remains, hold for human review; silence or timeout cancels the action.",
+        "audit_fields": "correlation_id, conversation_turn_ids, intent_candidates, proposed_action, ambiguity_reason, reviewer_id, decision, timestamp",
     },
 ]
 

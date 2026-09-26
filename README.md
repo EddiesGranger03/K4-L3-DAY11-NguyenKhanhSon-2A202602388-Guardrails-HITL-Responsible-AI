@@ -134,3 +134,14 @@ pip install -r requirements.txt
 Rồi mở [`CHECKPOINTS.md`](CHECKPOINTS.md) và làm lần lượt Checkpoint 1 → 5.
 
 Nộp theo [`SUBMISSION.md`](SUBMISSION.md) · Quy định: [`RULES.md`](RULES.md).
+
+### Chat thử với Blue hoặc Red
+
+Kích hoạt `.venv`, rồi chọn đội:
+
+```powershell
+python src/main.py --chat blue
+python src/main.py --chat red
+```
+
+`blue` dùng OpenRouter key và có input/output guardrails cùng rate limiter. `red` dùng provider/key Red trong `.env` và **cố ý không có guardrails mạnh**; chỉ dùng để demo các canary giả của lab. Với cả hai, nhập câu hỏi ở terminal rồi gõ `thoát` hoặc `exit` để dừng. Blue dùng free route hiện tại của OpenRouter; Red có thể tính phí tùy provider/model. Xem [`LEARNING_GUIDE.md`](LEARNING_GUIDE.md) để hiểu luồng xử lý.

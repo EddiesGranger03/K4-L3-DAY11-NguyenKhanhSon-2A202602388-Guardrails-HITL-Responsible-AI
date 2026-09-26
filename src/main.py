@@ -7,6 +7,8 @@ Chạy từ **gốc repo** (không cần ``cd src``):
     python src/main.py --part 2     # Checkpoint 2 — guardrails
     python src/main.py --part 3     # Checkpoint 3 — pipeline / results.json
     python src/main.py --part 4     # Checkpoint 4 — Red / Red Advance
+    python src/main.py --chat blue  # Interactive chat with guarded Blue
+    python src/main.py --chat red   # Interactive chat with unguarded Red
 
 File JSON luôn ghi vào ``<repo>/outputs/`` (không phụ thuộc thư mục hiện tại).
 
@@ -24,7 +26,90 @@ _SRC_DIR = Path(__file__).resolve().parent
 if str(_SRC_DIR) not in sys.path:
     sys.path.insert(0, str(_SRC_DIR))
 
-from core.config import setup_api_key
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
+from core.config import get_openrouter_api_key, setup_api_key
+
+
+async def _chat_loop(team: str, agent, runner, model_label: str, api_key: str):
+    from core.utils import chat_with_agent
+
+    print(f"\nChat {team} với {model_label} — gõ 'thoát' hoặc 'exit' để kết thúc.")
+    if team == "Blue":
+        print("Blue có input/output guardrails và rate limiter; route miễn phí hiện vẫn có giới hạn tốc độ.\n")
+    else:
+        print("Red không có guardrails mạnh và được nhúng canary giả của lab. Chỉ dùng để demo.\n")
+
+    while True:
+        try:
+            prompt = input("Bạn: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\nĐã kết thúc phiên chat.")
+            break
+
+        if prompt.lower() in {"thoát", "thoat", "exit", "quit"}:
+            print("Đã kết thúc phiên chat.")
+            break
+        if not prompt:
+            continue
+
+        try:
+            response, _ = await chat_with_agent(agent, runner, prompt)
+            print(f"{team}: {response or '(không có nội dung trả lời)'}\n")
+        except Exception as exc:
+            # Show the provider's useful status while redacting the configured key.
+            status = getattr(exc, "status_code", None)
+            detail = getattr(exc, "message", None)
+            if detail:
+                key = api_key
+                detail = str(detail).replace(key, "[REDACTED]") if key else str(detail)
+                detail = detail[:300]
+            status_text = f" HTTP {status}" if status else ""
+            detail_text = f": {detail}" if detail else ""
+            print(
+                f"Không gọi được model ({type(exc).__name__}{status_text}){detail_text}. "
+                "Kiểm tra model, kết nối, hạn mức và cấu hình key trong .env.\n"
+            )
+
+
+async def chat_blue():
+    """Start an interactive terminal chat with Blue and its guardrail plugins."""
+    if not get_openrouter_api_key():
+        print("Thiếu OPENROUTER_API_KEY. Hãy kiểm tra .env; không dán key vào terminal/chat.")
+        return
+
+    from agents.agent import create_blue_agent
+    from assignment.pipeline import build_production_plugins
+    from core.config import blue_provider_label
+
+    agent, runner = create_blue_agent(build_production_plugins(use_llm_judge=False))
+    await _chat_loop("Blue", agent, runner, blue_provider_label(), get_openrouter_api_key())
+
+
+async def chat_red():
+    """Start an interactive chat with the intentionally unguarded Red agent."""
+    from agents.agent import create_red_agent_default
+    from core.config import (
+        get_google_api_key,
+        get_openai_api_key,
+        get_red_provider,
+        red_provider_label,
+    )
+
+    provider = get_red_provider()
+    api_key = get_google_api_key() if provider == "gemini" else get_openai_api_key()
+    if not api_key:
+        key_name = "GOOGLE_API_KEY" if provider == "gemini" else "OPENAI_API_KEY"
+        print(f"Thiếu {key_name}. Hãy kiểm tra .env; không dán key vào terminal/chat.")
+        return
+
+    agent, runner = create_red_agent_default()
+    await _chat_loop("Red", agent, runner, red_provider_label("default"), api_key)
 
 
 async def part2_guardrails():
@@ -167,9 +252,23 @@ if __name__ == "__main__":
         choices=[2, 3, 4],
         help="2=CP2 guardrails · 3=CP3 suite · 4=CP4 red-team",
     )
+    parser.add_argument(
+        "--chat",
+        nargs="?",
+        const="blue",
+        choices=["blue", "red"],
+        metavar="TEAM",
+        help="Mở chat Blue hoặc Red (mặc định: blue)",
+    )
     args = parser.parse_args()
 
-    if args.part:
+    if args.chat and args.part is not None:
+        parser.error("Dùng --chat hoặc --part, không dùng đồng thời.")
+    if args.chat == "blue":
+        asyncio.run(chat_blue())
+    elif args.chat == "red":
+        asyncio.run(chat_red())
+    elif args.part:
         asyncio.run(main(parts=[args.part]))
     else:
         asyncio.run(main())

@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-labelledby="title desc">
+  <title id="title">VinBank AI Guardrails — infographic dự án</title>
+  <desc id="desc">Luồng phòng thủ Blue gồm giới hạn tần suất, kiểm tra đầu vào, model, lọc đầu ra và phản hồi. Các kết quả từ artifact lab và vai trò egress, HITL được chú thích riêng.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#071726"/>
+      <stop offset="1" stop-color="#0D2438"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#42D9C4"/>
+      <stop offset="1" stop-color="#6BAEFF"/>
+    </linearGradient>
+    <style>
+      text { font-family: "Segoe UI", Arial, sans-serif; }
+      .eyebrow { font-size: 23px; font-weight: 700; letter-spacing: 3px; fill: #54DCC9; }
+      .title { font-size: 69px; font-weight: 800; fill: #F7FBFF; }
+      .subtitle { font-size: 28px; fill: #B8CCE0; }
+      .byline { font-size: 22px; fill: #B8CCE0; }
+      .card-title { font-size: 31px; font-weight: 750; fill: #F7FBFF; }
+      .card-body { font-size: 23px; fill: #BDD0E2; }
+      .card-kicker { font-size: 17px; font-weight: 700; letter-spacing: 1.4px; fill: #6BE0D0; }
+      .section { font-size: 25px; font-weight: 700; letter-spacing: 1.1px; fill: #EAF4FE; }
+      .metric-number { font-size: 53px; font-weight: 800; fill: #F8FCFF; }
+      .metric-label { font-size: 21px; fill: #C1D2E2; }
+      .small { font-size: 20px; fill: #AEC5D9; }
+      .tiny { font-size: 17px; fill: #8FA9C0; }
+    </style>
+  </defs>
+
+  <rect width="1920" height="1080" fill="url(#background)"/>
+  <rect width="1920" height="11" fill="url(#accent)"/>
+  <circle cx="1788" cy="140" r="235" fill="#143953" opacity="0.34"/>
+  <circle cx="77" cy="914" r="225" fill="#0B6A69" opacity="0.13"/>
+
+  <text x="84" y="78" class="eyebrow">DAY 11  /  RESPONSIBLE AI  /  VINBANK</text>
+  <text x="84" y="159" class="title">AI GUARDRAILS: PHÒNG THỦ NHIỀU LỚP</text>
+  <text x="86" y="210" class="subtitle">Từ một câu hỏi của người dùng đến một phản hồi được kiểm soát</text>
+  <rect x="1500" y="52" width="336" height="49" rx="24" fill="#17364D" stroke="#35617D"/>
+  <text x="1522" y="84" class="byline">Nguyễn Khánh Sơn · Day 11</text>
+
+  <!-- Main pipeline -->
+  <rect x="84" y="258" width="316" height="300" rx="25" fill="#122D43" stroke="#2B6376" stroke-width="2"/>
+  <circle cx="134" cy="312" r="27" fill="#124F57"/>
+  <text x="121" y="321" font-size="23" font-weight="800" fill="#79E8D6">01</text>
+  <text x="116" y="376" class="card-title">RATE LIMITER</text>
+  <text x="116" y="418" class="card-body">10 lượt / 60 giây</text>
+  <text x="116" y="455" class="card-body">theo từng user</text>
+  <rect x="116" y="490" width="247" height="39" rx="19" fill="#15464F"/>
+  <text x="137" y="517" class="card-kicker">CHẶN LẠM DỤNG</text>
+
+  <path d="M410 408h23m-11-11 11 11-11 11" fill="none" stroke="#61BAC2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="438" y="258" width="316" height="300" rx="25" fill="#122D43" stroke="#2D5E88" stroke-width="2"/>
+  <circle cx="488" cy="312" r="27" fill="#1B416B"/>
+  <text x="475" y="321" font-size="23" font-weight="800" fill="#96C4FF">02</text>
+  <text x="470" y="376" class="card-title">INPUT GUARD</text>
+  <text x="470" y="418" class="card-body">Unicode · injection</text>
+  <text x="470" y="455" class="card-body">· chủ đề ngân hàng</text>
+  <rect x="470" y="490" width="247" height="39" rx="19" fill="#183D65"/>
+  <text x="491" y="517" class="card-kicker" fill="#9EC8FF">CHẶN TRƯỚC MODEL</text>
+
+  <path d="M764 408h23m-11-11 11 11-11 11" fill="none" stroke="#74A8D8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="792" y="258" width="316" height="300" rx="25" fill="#173650" stroke="#537DA0" stroke-width="2"/>
+  <circle cx="842" cy="312" r="27" fill="#2D5B7A"/>
+  <text x="829" y="321" font-size="23" font-weight="800" fill="#E9F6FF">03</text>
+  <text x="824" y="376" class="card-title">BLUE MODEL</text>
+  <text x="824" y="418" class="card-body">OpenRouter</text>
+  <text x="824" y="455" class="card-body">Liquid LFM 2.5 · 2.6B</text>
+  <rect x="824" y="490" width="247" height="39" rx="19" fill="#2D4D6A"/>
+  <text x="845" y="517" class="card-kicker" fill="#CDE7FF">SINH CÂU TRẢ LỜI</text>
+
+  <path d="M1118 408h23m-11-11 11 11-11 11" fill="none" stroke="#74A8D8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="1146" y="258" width="316" height="300" rx="25" fill="#122D43" stroke="#C48169" stroke-width="2"/>
+  <circle cx="1196" cy="312" r="27" fill="#684242"/>
+  <text x="1183" y="321" font-size="23" font-weight="800" fill="#FFD4BA">04</text>
+  <text x="1178" y="376" class="card-title">OUTPUT GUARD</text>
+  <text x="1178" y="418" class="card-body">PII · secret · chuỗi</text>
+  <text x="1178" y="455" class="card-body">bị tách ký tự</text>
+  <rect x="1178" y="490" width="247" height="39" rx="19" fill="#684139"/>
+  <text x="1199" y="517" class="card-kicker" fill="#FFD3BD">CHE [REDACTED]</text>
+
+  <path d="M1472 408h23m-11-11 11 11-11 11" fill="none" stroke="#61BAC2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="1500" y="258" width="336" height="300" rx="25" fill="#103C45" stroke="#3AB5AB" stroke-width="2"/>
+  <circle cx="1550" cy="312" r="27" fill="#197569"/>
+  <text x="1537" y="321" font-size="23" font-weight="800" fill="#D8FFF7">05</text>
+  <text x="1532" y="376" class="card-title">PHẢN HỒI</text>
+  <text x="1532" y="418" class="card-body">Chỉ nội dung đã</text>
+  <text x="1532" y="455" class="card-body">qua kiểm soát</text>
+  <rect x="1532" y="490" width="267" height="39" rx="19" fill="#17605B"/>
+  <text x="1553" y="517" class="card-kicker">TRẢ CHO NGƯỜI DÙNG</text>
+
+  <!-- Independent sink policy -->
+  <rect x="84" y="588" width="1752" height="88" rx="22" fill="#153247" stroke="#3D7087" stroke-width="2"/>
+  <rect x="110" y="608" width="275" height="47" rx="23" fill="#245667"/>
+  <text x="135" y="639" font-size="22" font-weight="800" letter-spacing="1" fill="#DDF7FF">EGRESS POLICY</text>
+  <text x="416" y="639" font-size="25" fill="#E2F2FF">HTTPS · host VinBank cho phép · chặn payload nhạy cảm</text>
+  <text x="1570" y="639" font-size="19" fill="#95B8CA">Hàm riêng; chưa nối chat</text>
+
+  <!-- Evidence panel -->
+  <rect x="84" y="708" width="852" height="238" rx="25" fill="#112C42" stroke="#2A536D" stroke-width="2"/>
+  <text x="112" y="751" class="section">BẰNG CHỨNG BLUE · SUITE MẪU</text>
+  <rect x="112" y="773" width="246" height="143" rx="18" fill="#173B51"/>
+  <text x="136" y="840" class="metric-number">6/6</text>
+  <text x="137" y="880" class="metric-label">câu an toàn qua</text>
+  <rect x="374" y="773" width="246" height="143" rx="18" fill="#173B51"/>
+  <text x="398" y="840" class="metric-number">8/8</text>
+  <text x="399" y="880" class="metric-label">attack bị chặn</text>
+  <rect x="636" y="773" width="272" height="143" rx="18" fill="#173B51"/>
+  <text x="660" y="840" class="metric-number">5/15</text>
+  <text x="661" y="880" class="metric-label">lượt bị rate limit</text>
+
+  <!-- Red team panel -->
+  <rect x="966" y="708" width="870" height="238" rx="25" fill="#112C42" stroke="#2A536D" stroke-width="2"/>
+  <text x="994" y="751" class="section">RED TEAM · CHẠY MODEL THẬT</text>
+  <circle cx="1020" cy="810" r="11" fill="#FF8F7F"/>
+  <text x="1043" y="819" font-size="27" font-weight="700" fill="#F7FBFF">Red</text>
+  <text x="1187" y="819" font-size="25" fill="#C6D7E7">không guardrails mạnh</text>
+  <text x="1676" y="819" font-size="34" font-weight="800" fill="#FFAA98">4/5 leak</text>
+  <line x1="994" y1="842" x2="1807" y2="842" stroke="#34536A" stroke-width="2"/>
+  <circle cx="1020" cy="883" r="11" fill="#55D9C9"/>
+  <text x="1043" y="892" font-size="27" font-weight="700" fill="#F7FBFF">Red Advance</text>
+  <text x="1280" y="892" font-size="25" fill="#C6D7E7">guardrails mạnh</text>
+  <text x="1676" y="892" font-size="34" font-weight="800" fill="#71E1D1">0/5 leak</text>
+
+  <!-- HITL note -->
+  <rect x="84" y="965" width="1752" height="61" rx="20" fill="#19334D" stroke="#37607E" stroke-width="2"/>
+  <text x="111" y="1005" font-size="23" font-weight="800" fill="#ACCAFF">HITL</text>
+  <text x="196" y="1005" font-size="22" fill="#DBE9F8">Hành động rủi ro cao cần người duyệt · thiết kế tham khảo, chưa nối luồng chat</text>
+  <text x="84" y="1058" class="tiny">Nguồn: outputs/results.json và outputs/attack_results.json · snapshot 26/09/2026 · suite Blue dùng phản hồi mẫu; Red dùng API model thật.</text>
+</svg>

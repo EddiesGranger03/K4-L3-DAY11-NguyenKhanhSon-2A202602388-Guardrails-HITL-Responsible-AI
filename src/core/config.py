@@ -20,7 +20,18 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+import sys
+
 _ROOT = Path(__file__).resolve().parents[2]
+
+if sys.platform == "win32":
+    try:
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8")
+        if hasattr(sys.stderr, "reconfigure"):
+            sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
 
 try:
     from dotenv import load_dotenv
@@ -37,6 +48,9 @@ PROVIDER_OPENROUTER = "openrouter"
 # --- Blue Team (LOCKED) ---
 BLUE_PROVIDER = PROVIDER_OPENROUTER
 BLUE_MODEL = "liquid/lfm-2.5-2.6b"
+# OpenRouter currently exposes this model through its free-route ID. Keep the
+# canonical lab model name above for rubric/provider labels.
+BLUE_API_MODEL = f"{BLUE_MODEL}:free"
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 DEFAULT_OPENROUTER_MODEL = BLUE_MODEL  # alias
 
@@ -108,6 +122,11 @@ def get_blue_model() -> str:
     return BLUE_MODEL
 
 
+def get_blue_api_model() -> str:
+    """Return the currently routable OpenRouter ID for the locked Blue model."""
+    return BLUE_API_MODEL
+
+
 def get_openrouter_api_key() -> str:
     return os.environ.get("OPENROUTER_API_KEY", "").strip()
 
@@ -169,8 +188,19 @@ def get_openai_api_key() -> str:
     return os.environ.get("OPENAI_API_KEY", "").strip()
 
 
+def get_google_api_key() -> str:
+    return os.environ.get("GOOGLE_API_KEY", "").strip()
+
+
 def red_openai_client_kwargs() -> dict:
-    return {"api_key": get_openai_api_key() or None}
+    key = get_openai_api_key()
+    kwargs = {"api_key": key or None}
+    base_url = os.environ.get("OPENAI_BASE_URL")
+    if not base_url and key and key.startswith("sk-or-"):
+        base_url = os.environ.get("OPENROUTER_BASE_URL", OPENROUTER_BASE_URL).strip() or OPENROUTER_BASE_URL
+    if base_url:
+        kwargs["base_url"] = base_url
+    return kwargs
 
 
 def red_provider_label(tier: str = "advance") -> str:
@@ -245,7 +275,7 @@ def setup_api_key():
     red = get_red_provider()
     model = get_red_model()
     if red == PROVIDER_GEMINI:
-        if not os.environ.get("GOOGLE_API_KEY", "").strip():
+        if not get_google_api_key():
             os.environ["GOOGLE_API_KEY"] = input("Enter Google API Key (Red): ").strip()
         os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "0"
         print(f"Red / Red Advance  — gemini:{model}")
@@ -265,12 +295,12 @@ def setup_api_key():
 
 
 ALLOWED_TOPICS = [
-    "banking", "account", "transaction", "transfer",
+    "vinbank", "banking", "account", "transaction", "transfer",
     "loan", "interest", "savings", "credit",
     "deposit", "withdrawal", "balance", "payment",
     "tai khoan", "giao dich", "tiet kiem", "lai suat",
     "chuyen tien", "the tin dung", "so du", "vay",
-    "ngan hang", "atm",
+    "ngan hang", "san pham", "dich vu", "atm",
 ]
 
 BLOCKED_TOPICS = [
